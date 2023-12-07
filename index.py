@@ -76,8 +76,11 @@ async def viewtasks(context): # Still have to check if this works!
 
 @bot.command()
 async def finishtask(context, taskname): 
-    taskcollection.delete_one({"user": context.message.author.name, "task": taskname})
-    await context.send(context.message.author.mention + " Good job finishing " + taskname)
-
+    if(taskcollection.find_one({"user": context.message.author.name, "task": taskname})): 
+        taskcollection.delete_one({"user": context.message.author.name, "task": taskname})
+        await context.send(context.message.author.mention + " Good job finishing " + taskname)
+    else: 
+        await context.send(context.message.author.mention + " That task does not exist!")
+        
 bot.run(os.getenv("TOKEN"))
 
