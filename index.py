@@ -25,13 +25,26 @@ myDB = client["DiscordBot"]
 @bot.event
 async def on_ready(): 
     print("Bot is ready for use!")
+    await bot.tree.sync()
 
-@bot.command() #You do this to open a new command!
+@bot.hybrid_command() #You do this to open a new command!
 async def hello(context): 
     await context.send("Hello it's the bot lol")
 
+@bot.hybrid_command()
+async def getcommands(context): 
+    embed = discord.Embed(title="Get Commands - Shows a description of all commands the bot offers", color=0x00ff00)
+    embed.add_field(name="hello", value="\"!hello\" -> say hello to the bot!", inline=False)
+    embed.add_field(name="pomodoro", value="The format of the command is -> \n \"!pomodoro studytime breaktime sessionnumber\". Enter the studytime and breaktime in minutes!", inline=False)
+    embed.add_field(name="finishpomodoro", value="\"!finishpomodoro\" -> Use it to finish your current pomodoro session early", inline=False)
+    embed.add_field(name="leaderboard", value="\"!leaderboard\" -> Use the command to check the server's leaderboard for study time!", inline=False)
+    embed.add_field(name="addtask", value="The format of the command is -> \n \"!addtask \"task name\" \"task description\"\"", inline=False)
+    embed.add_field(name="finishtask", value="The format of the command is -> \n \"!finishtask \"task name\"\". Use the same task name as you did in addtask!", inline=False)
+    embed.add_field(name="motivation", value="\"!motivation\" -> Use the command to get a motivational quote!")
+    await context.send(embed=embed)
+
 pomodorocollection = myDB["Pomodoros"]
-@bot.command() #You do this to open a new command!
+@bot.hybrid_command() #You do this to open a new command!
 async def pomodoro(context, studytime, breaktime, sessionnumber): 
     global currentsesh
     global originalsessionnumber
@@ -84,7 +97,7 @@ async def pomodoro(context, studytime, breaktime, sessionnumber):
         })    
     stoppomodoro = True   
     
-@bot.command()
+@bot.hybrid_command()
 async def finishpomodoro(context): 
     global currentsesh
     global originalsessionnumber
@@ -95,7 +108,7 @@ async def finishpomodoro(context):
     else: 
         await context.send(context.message.author.mention + " You have not started a pomodoro yet!")    
 
-@bot.command()
+@bot.hybrid_command()
 async def leaderboard(context): 
     users = []
     time = []
@@ -123,7 +136,7 @@ async def leaderboard(context):
     await context.send(embed=embedmessage)
 
 taskcollection = myDB["Tasks"]
-@bot.command()
+@bot.hybrid_command()
 async def addtask(context, taskname, description): 
     taskcollection.insert_one(
         {
@@ -134,7 +147,7 @@ async def addtask(context, taskname, description):
     )
     await context.send("Successfully added a task, " + taskname)
 
-@bot.command()
+@bot.hybrid_command()
 async def viewtasks(context): # Still have to check if this works!
     embedmessage = discord.Embed(title="Tasks - " + context.message.author.name, color=0x00ff00)
     alltasks = taskcollection.find({"user": context.message.author.name})
@@ -147,7 +160,7 @@ async def viewtasks(context): # Still have to check if this works!
     else: 
         await context.send(embed=embedmessage)  
 
-@bot.command()
+@bot.hybrid_command()
 async def finishtask(context, taskname): 
     if(taskcollection.find_one({"user": context.message.author.name, "task": taskname})): 
         taskcollection.delete_one({"user": context.message.author.name, "task": taskname})
@@ -155,7 +168,7 @@ async def finishtask(context, taskname):
     else: 
         await context.send(context.message.author.mention + " That task does not exist!")
 
-@bot.command()
+@bot.hybrid_command()
 async def motivation(context): 
     username = context.message.author.name
     #all quotes from https://github.com/TamoStudy/TamoBot/blob/main/apps/misc/motivation.py
